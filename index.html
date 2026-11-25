@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liber Liber — La biblioteca digitale italiana</title>
+    <meta name="description" content="Presentazione interattiva di Liber Liber, la biblioteca digitale italiana." />
+    <meta name="theme-color" content="#050812" />
+
+    <!-- Icone Web generate su misura -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph / Condivisione Web -->
+    <meta property="og:title" content="Liber Liber — La biblioteca digitale italiana" />
+    <meta property="og:description" content="Esperienza web interattiva dedicata a Liber Liber e al Progetto Manuzio." />
+    <meta property="og:image" content="/icon-512.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- Tipografia editoriale -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Sipario iniziale cinematografico -->
+    <div class="preloader" id="preloader" aria-hidden="true">
+      <div class="preloader__inner">
+        <div class="preloader__medallion">
+          <span class="preloader__ring preloader__ring--outer"></span>
+          <span class="preloader__ring preloader__ring--inner"></span>
+          <img src="/emblem.webp" alt="" width="88" height="88" />
+        </div>
+        <p class="preloader__brand">Liber Liber</p>
+        <div class="preloader__bar"><span class="preloader__fill"></span></div>
+        <p class="preloader__meta">Biblioteca digitale italiana · Est. 1993</p>
+      </div>
+    </div>
+
+    <!-- Scena 3D (Three.js + UnrealBloom + Simplex Noise) -->
+    <canvas id="webgl" aria-hidden="true"></canvas>
+    <div class="ambient-aurora" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <!-- Barra di avanzamento superiore -->
+    <div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
+
+    <!-- Barra HUD superiore (esperienza Web) -->
+    <header class="hud" aria-label="Controlli della presentazione">
+      <a class="hud__brand" href="#home" data-magnetic="0.18" data-cursor="pointer">
+        <span class="hud__icon">
+          <img src="/emblem.webp" alt="Emblema Liber Liber" width="32" height="32" />
+        </span>
+        <span class="hud__titles">
+          <span class="hud__name">Liber Liber</span>
+          <span class="hud__chapter" id="hud-chapter">
+            <span class="hud__chapter-num">00</span>
+            <span class="hud__chapter-sep">·</span>
+            <span class="hud__chapter-label">Copertina</span>
+          </span>
+        </span>
+      </a>
+
+      <div class="hud__controls">
+        <button
+          type="button"
+          class="hud__btn"
+          id="btn-audio"
+          aria-pressed="false"
+          aria-label="Attiva o disattiva il suono"
+          data-magnetic="0.22"
+          data-tippy-content="Suono ambientale &amp; micro-effetti · Tasto <b>M</b>"
+        >
+          <span class="hud__eq" aria-hidden="true"><i></i><i></i><i></i></span>
+          <i data-lucide="volume-x" class="ico-off"></i>
+          <i data-lucide="volume-2" class="ico-on"></i>
+          <span class="hud__btn-label">Audio</span>
+        </button>
+
+        <button
+          type="button"
+          class="hud__btn hud__btn--icon"
+          id="btn-fullscreen"
+          aria-label="Modalità schermo intero"
+          data-magnetic="0.22"
+          data-tippy-content="Schermo intero · Tasto <b>F</b>"
+        >
+          <i data-lucide="maximize-2" class="ico-enter"></i>
+          <i data-lucide="minimize-2" class="ico-exit"></i>
+        </button>
+
+        <button
+          type="button"
+          class="hud__btn hud__btn--icon"
+          id="btn-keys"
+          aria-label="Scorciatoie da tastiera"
+          data-magnetic="0.22"
+          data-tippy-content="<div class='tip-keys'><div><kbd>↑</kbd><kbd>↓</kbd> o <kbd>Spazio</kbd> Cambia sezione</div><div><kbd>F</kbd> Schermo intero · <kbd>M</kbd> Suono</div><div><kbd>Clic</kbd> Onda luminosa nello spazio 3D</div></div>"
+        >
+          <i data-lucide="keyboard"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigazione laterale con binario progressivo -->
+    <nav class="sidenav" aria-label="Sezioni della presentazione">
+      <div class="sidenav__rail" aria-hidden="true"><span class="sidenav__rail-fill"></span></div>
+      <ol>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#introduzione" data-magnetic="0.25">
+            <span class="sidenav__label"><em>01</em> Introduzione</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#storia" data-magnetic="0.25">
+            <span class="sidenav__label"><em>02</em> Storia</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#offerta" data-magnetic="0.25">
+            <span class="sidenav__label"><em>03</em> Che cosa offre</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#funzionamento" data-magnetic="0.25">
+            <span class="sidenav__label"><em>04</em> Come funziona</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#punti-di-forza" data-magnetic="0.25">
+            <span class="sidenav__label"><em>05</em> Punti di forza</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#limiti" data-magnetic="0.25">
+            <span class="sidenav__label"><em>06</em> Limiti</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidenav__dot" data-target="#conclusione" data-magnetic="0.25">
+            <span class="sidenav__label"><em>07</em> Conclusione</span>
+          </button>
+        </li>
+      </ol>
+    </nav>
+
+    <main>
+      <!-- Schermata iniziale -->
+      <section class="section hero" id="home" data-scene data-chapter-num="00" data-chapter-name="Copertina">
+        <div class="hero__inner">
+          <div class="hero__crest" data-magnetic="0.16">
+            <span class="hero__crest-halo" aria-hidden="true"></span>
+            <img src="/emblem.webp" alt="Emblema Liber Liber" width="84" height="84" />
+          </div>
+          <p class="hero__kicker">Progetto Manuzio · Cultura aperta</p>
+          <h1 class="hero__title" data-split>Liber Liber</h1>
+          <div class="hero__ornament" aria-hidden="true"><span></span><i>✦</i><span></span></div>
+          <p class="hero__subtitle">La biblioteca digitale italiana</p>
+          <p class="hero__hint">
+            <i data-lucide="mouse-pointer-click"></i>
+            <span>Clicca nello spazio 3D per irradiare luce · Usa le frecce o scorri</span>
+          </p>
+        </div>
+        <a class="hero__scroll" href="#introduzione" data-magnetic="0.24" data-cursor="pointer">
+          <span>Scorri per iniziare</span>
+          <svg class="hero__arrow" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4v15M5 12l7 7 7-7" />
+          </svg>
+        </a>
+      </section>
+
+      <!-- 1. Introduzione -->
+      <section class="section section--left" id="introduzione" data-scene data-nav="0" data-chapter-num="01" data-chapter-name="Introduzione">
+        <div class="panel">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">01</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Presentazione</span>
+          </div>
+          <h2 class="section__title" data-split>Introduzione</h2>
+          <p class="reveal lead">Sito web italiano: <strong>Liber Liber</strong>.</p>
+          <p class="reveal">
+            Ho scelto questo sito perché è gratuito, è molto utile per gli studenti di italiano ed è uno dei primi
+            esempi di biblioteca digitale in Italia.
+          </p>
+
+          <div class="pill-row" data-anim="pills">
+            <span class="meta-pill"><i data-lucide="book-open"></i> Gratuito e aperto</span>
+            <span class="meta-pill"><i data-lucide="graduation-cap"></i> Ideale per studiare</span>
+            <span class="meta-pill"><i data-lucide="landmark"></i> Pioniera in Italia</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Storia -->
+      <section class="section section--left" id="storia" data-scene data-nav="1" data-chapter-num="02" data-chapter-name="Storia">
+        <div class="panel panel--wide">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">02</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Origini</span>
+          </div>
+          <h2 class="section__title" data-split>Storia</h2>
+          <p class="reveal">
+            Liber Liber nasce all'inizio degli anni Novanta con il nome di <strong>Progetto Manuzio</strong>.
+          </p>
+          <p class="reveal">
+            Il nome è un omaggio ad <strong>Aldo Manuzio</strong>, un famoso stampatore del Rinascimento che ha reso
+            i libri più accessibili.
+          </p>
+          <p class="reveal">
+            Anche oggi l'idea è la stessa: rendere la cultura accessibile a tutti, ma con la tecnologia digitale. Il
+            sito è gestito da un'associazione senza scopo di lucro.
+          </p>
+
+          <div class="timeline" data-anim="timeline">
+            <div class="timeline__track" aria-hidden="true"><span class="timeline__line"></span></div>
+            <ol class="timeline__list">
+              <li
+                class="timeline__item"
+                tabindex="0"
+                data-cursor="pointer"
+                data-tippy-content="<b>XV–XVI secolo</b><br/>La nascita della stampa a caratteri mobili trasforma la diffusione del sapere in Europa."
+              >
+                <span class="timeline__dot" aria-hidden="true"></span>
+                <span class="timeline__date">XV–XVI secolo</span>
+                <span class="timeline__label">Rinascimento</span>
+              </li>
+              <li
+                class="timeline__item"
+                tabindex="0"
+                data-cursor="pointer"
+                data-tippy-content="<b>Venezia, 1494</b><br/>Aldo Manuzio inventa il formato tascabile e il carattere corsivo, portando i classici fuori dalle sole biblioteche nobiliari."
+              >
+                <span class="timeline__dot" aria-hidden="true"></span>
+                <span class="timeline__date">Venezia, 1494</span>
+                <span class="timeline__label">Aldo Manuzio</span>
+              </li>
+              <li
+                class="timeline__item"
+                tabindex="0"
+                data-cursor="pointer"
+                data-tippy-content="<b>Anni '90</b><br/>Nasce il Progetto Manuzio: volontari digitalizzano i grandi testi della letteratura italiana per renderli liberi online."
+              >
+                <span class="timeline__dot" aria-hidden="true"></span>
+                <span class="timeline__date">Anni '90</span>
+                <span class="timeline__label">Progetto Manuzio</span>
+              </li>
+              <li
+                class="timeline__item timeline__item--now"
+                tabindex="0"
+                data-cursor="pointer"
+                data-tippy-content="<b>Oggi</b><br/>Migliaia di e-book, audiolibri e brani musicali gratuiti gestiti da un'associazione culturale senza scopo di lucro."
+              >
+                <span class="timeline__dot" aria-hidden="true"></span>
+                <span class="timeline__date">Oggi</span>
+                <span class="timeline__label">Liber Liber</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Che cosa offre -->
+      <section class="section section--right" id="offerta" data-scene data-nav="2" data-chapter-num="03" data-chapter-name="Che cosa offre">
+        <div class="panel panel--wide">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">03</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Catalogo</span>
+          </div>
+          <h2 class="section__title" data-split>Che cosa offre</h2>
+          <p class="reveal">
+            Su Liber Liber possiamo trovare gratuitamente opere di <strong>pubblico dominio</strong>, cioè libri di
+            cui il diritto d'autore è scaduto.
+          </p>
+          <p class="reveal">
+            Ci sono i grandi classici della letteratura italiana, per esempio Dante, Boccaccio, Leopardi e Manzoni.
+          </p>
+
+          <div class="authors" data-anim="cards">
+            <article
+              class="author-card is-selected"
+              tabindex="0"
+              role="button"
+              data-tilt
+              data-cursor="card"
+              data-cursor-label="Incipit"
+              data-quote="«Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura…»"
+              data-source="Dante Alighieri · Inferno, Canto I"
+            >
+              <div class="author-card__inner">
+                <span class="author-card__initial" aria-hidden="true">D</span>
+                <h3 class="author-card__name">Dante Alighieri</h3>
+                <p class="author-card__dates">1265 – 1321</p>
+                <p class="author-card__work">Divina Commedia</p>
+              </div>
+            </article>
+            <article
+              class="author-card"
+              tabindex="0"
+              role="button"
+              data-tilt
+              data-cursor="card"
+              data-cursor-label="Incipit"
+              data-quote="«Umana cosa è aver compassione degli afflitti…»"
+              data-source="Giovanni Boccaccio · Decameron, Proemio"
+            >
+              <div class="author-card__inner">
+                <span class="author-card__initial" aria-hidden="true">B</span>
+                <h3 class="author-card__name">Giovanni Boccaccio</h3>
+                <p class="author-card__dates">1313 – 1375</p>
+                <p class="author-card__work">Decameron</p>
+              </div>
+            </article>
+            <article
+              class="author-card"
+              tabindex="0"
+              role="button"
+              data-tilt
+              data-cursor="card"
+              data-cursor-label="Incipit"
+              data-quote="«Sempre caro mi fu quest'ermo colle, e questa siepe, che da tanta parte…»"
+              data-source="Giacomo Leopardi · L'Infinito, Canti"
+            >
+              <div class="author-card__inner">
+                <span class="author-card__initial" aria-hidden="true">L</span>
+                <h3 class="author-card__name">Giacomo Leopardi</h3>
+                <p class="author-card__dates">1798 – 1837</p>
+                <p class="author-card__work">Canti</p>
+              </div>
+            </article>
+            <article
+              class="author-card"
+              tabindex="0"
+              role="button"
+              data-tilt
+              data-cursor="card"
+              data-cursor-label="Incipit"
+              data-quote="«Quel ramo del lago di Como, che volge a mezzogiorno, tra due catene non interrotte di monti…»"
+              data-source="Alessandro Manzoni · I promessi sposi, Cap. I"
+            >
+              <div class="author-card__inner">
+                <span class="author-card__initial" aria-hidden="true">M</span>
+                <h3 class="author-card__name">Alessandro Manzoni</h3>
+                <p class="author-card__dates">1785 – 1873</p>
+                <p class="author-card__work">I promessi sposi</p>
+              </div>
+            </article>
+          </div>
+
+          <!-- Anteprima interattiva dell'incipit del classico selezionato -->
+          <figure class="incipit" id="author-quote" data-anim="quote">
+            <span class="incipit__mark" aria-hidden="true"><i data-lucide="quote"></i></span>
+            <blockquote class="incipit__text">
+              «Nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura…»
+            </blockquote>
+            <figcaption class="incipit__source">Dante Alighieri · Inferno, Canto I</figcaption>
+          </figure>
+
+          <p class="reveal">
+            Il sito propone anche <strong>audiolibri</strong> e musica libera da diritti. I testi si possono leggere
+            online o scaricare in formato <strong>e-book</strong>.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4. Come funziona -->
+      <section class="section section--center" id="funzionamento" data-scene data-nav="3" data-chapter-num="04" data-chapter-name="Come funziona">
+        <div class="panel panel--xl">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">04</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Esperienza d'uso</span>
+          </div>
+          <h2 class="section__title" data-split>Come funziona</h2>
+          <p class="reveal">
+            Il sito è semplice da usare. Si può cercare un'opera per <strong>autore</strong> o per
+            <strong>titolo</strong>, poi si sceglie il formato e si scarica il file sul telefono, sul computer o su
+            un lettore di e-book.
+          </p>
+
+          <div class="steps" data-anim="steps">
+            <div class="steps__track" aria-hidden="true"><span class="steps__line"></span></div>
+            <ol class="steps__list">
+              <li class="step">
+                <div class="step__icon ico-search" aria-hidden="true">
+                  <svg viewBox="0 0 48 48">
+                    <g class="lens">
+                      <circle cx="21" cy="21" r="11" pathLength="1" />
+                      <path d="M29 29l10 10" pathLength="1" />
+                      <path d="M15.5 18.5a6.5 6.5 0 0 1 5-4" pathLength="1" />
+                    </g>
+                  </svg>
+                </div>
+                <span class="step__num">01</span>
+                <h3 class="step__title">Cerca</h3>
+                <p class="step__text">per autore o per titolo</p>
+              </li>
+              <li class="step">
+                <div class="step__icon ico-file" aria-hidden="true">
+                  <svg viewBox="0 0 48 48">
+                    <path d="M13 6h16l9 9v27H13z" pathLength="1" />
+                    <path d="M29 6v9h9" pathLength="1" />
+                    <path class="ln ln1" d="M18 23h15" pathLength="1" />
+                    <path class="ln ln2" d="M18 29h15" pathLength="1" />
+                    <path class="ln ln3" d="M18 35h9" pathLength="1" />
+                  </svg>
+                </div>
+                <span class="step__num">02</span>
+                <h3 class="step__title">Scegli il formato</h3>
+                <p class="step__text">e-book, PDF o audiolibro</p>
+              </li>
+              <li class="step">
+                <div class="step__icon ico-download" aria-hidden="true">
+                  <svg viewBox="0 0 48 48">
+                    <g class="arrow">
+                      <path d="M24 7v22" pathLength="1" />
+                      <path d="M15 20l9 9 9-9" pathLength="1" />
+                    </g>
+                    <path d="M9 33v7h30v-7" pathLength="1" />
+                  </svg>
+                </div>
+                <span class="step__num">03</span>
+                <h3 class="step__title">Scarica</h3>
+                <p class="step__text">sul telefono, sul computer o sull'e-reader</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="formats" data-anim="pills" aria-label="Formati disponibili">
+            <button
+              type="button"
+              class="format-pill is-active"
+              data-cursor="pointer"
+              data-tippy-content="Formato aperto ideale per e-reader, tablet e smartphone con testo adattabile."
+            >
+              <i data-lucide="tablet"></i><span>EPUB</span>
+            </button>
+            <button
+              type="button"
+              class="format-pill"
+              data-cursor="pointer"
+              data-tippy-content="Impaginazione classica fedele alla stampa, perfetta su computer o da stampare."
+            >
+              <i data-lucide="file-text"></i><span>PDF</span>
+            </button>
+            <button
+              type="button"
+              class="format-pill"
+              data-cursor="pointer"
+              data-tippy-content="Letture ad alta voce gratuite per ascoltare i classici e allenare la pronuncia."
+            >
+              <i data-lucide="headphones"></i><span>Audiolibro MP3</span>
+            </button>
+            <button
+              type="button"
+              class="format-pill"
+              data-cursor="pointer"
+              data-tippy-content="Registrazioni di musica classica e antica libere da diritti."
+            >
+              <i data-lucide="music"></i><span>Musica libera</span>
+            </button>
+          </div>
+
+          <div class="visit" data-anim="button">
+            <a
+              class="btn-visit"
+              href="https://www.liberliber.it"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-magnetic="0.22"
+              data-cursor="external"
+              data-cursor-label="Apri"
+            >
+              <span>Visita Liber Liber</span>
+              <i data-lucide="arrow-up-right"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Punti di forza -->
+      <section class="section section--center" id="punti-di-forza" data-scene data-nav="4" data-chapter-num="05" data-chapter-name="Punti di forza">
+        <div class="panel panel--xl">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">05</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Valore culturale</span>
+          </div>
+          <h2 class="section__title" data-split>Punti di forza</h2>
+
+          <div class="strengths" data-anim="strengths">
+            <article class="strength" data-tilt data-cursor="card">
+              <div class="strength__top">
+                <span class="strength__num">01</span>
+                <span class="strength__badge" aria-hidden="true"><i data-lucide="gift"></i></span>
+              </div>
+              <p>Il primo punto di forza è la <strong>gratuità</strong>: non si paga niente.</p>
+            </article>
+            <article class="strength" data-tilt data-cursor="card">
+              <div class="strength__top">
+                <span class="strength__num">02</span>
+                <span class="strength__badge" aria-hidden="true"><i data-lucide="compass"></i></span>
+              </div>
+              <p>Il secondo è l'<strong>accesso facile</strong> ai classici, che è molto utile per studiare.</p>
+            </article>
+            <article class="strength" data-tilt data-cursor="card">
+              <div class="strength__top">
+                <span class="strength__num">03</span>
+                <span class="strength__badge" aria-hidden="true"><i data-lucide="audio-lines"></i></span>
+              </div>
+              <p>
+                Il terzo è la <strong>qualità dei testi</strong> e la possibilità di ascoltare i libri, che aiuta
+                anche a migliorare la pronuncia e la comprensione.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Limiti -->
+      <section class="section section--left section--cold" id="limiti" data-scene data-nav="5" data-chapter-num="06" data-chapter-name="Limiti">
+        <div class="panel">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">06</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Sguardo critico</span>
+          </div>
+          <h2 class="section__title" data-split>Limiti</h2>
+          <p class="reveal lead">Ci sono anche dei limiti.</p>
+
+          <ul class="limits" data-anim="limits">
+            <li class="limit">
+              <span class="limit__icon" aria-hidden="true"><i data-lucide="hourglass"></i></span>
+              <p>
+                Il sito contiene solo opere libere da diritti, quindi ci sono
+                <strong>pochi autori contemporanei</strong>.
+              </p>
+            </li>
+            <li class="limit">
+              <span class="limit__icon" aria-hidden="true"><i data-lucide="layout-panel-top"></i></span>
+              <p>
+                Inoltre l'interfaccia è abbastanza <strong>semplice</strong> e meno moderna di altre piattaforme come
+                Kindle o Storytel.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 7. Conclusione -->
+      <section class="section section--left" id="conclusione" data-scene data-nav="6" data-chapter-num="07" data-chapter-name="Conclusione">
+        <div class="panel">
+          <div class="panel__glint" aria-hidden="true"></div>
+          <div class="section__head">
+            <span class="section__num">07</span>
+            <span class="section__rule"></span>
+            <span class="section__tag">Sintesi</span>
+          </div>
+          <h2 class="section__title" data-split>Conclusione</h2>
+          <p class="reveal">
+            In conclusione, Liber Liber è un esempio importante di <strong>letteratura digitale</strong>, perché usa
+            internet per conservare e diffondere il patrimonio letterario italiano.
+          </p>
+          <!-- ✏️ FRASE PERSONALE: sostituisci il testo qui sotto con la tua frase -->
+          <p class="reveal personal">
+            Per me, è uno strumento prezioso che continuerò a usare per leggere i classici in lingua originale.
+          </p>
+        </div>
+      </section>
+
+      <!-- Schermata finale -->
+      <section class="section finale" id="grazie" data-scene data-nav="6" data-chapter-num="✦" data-chapter-name="Grazie">
+        <div class="finale__inner">
+          <div class="finale__crest" id="btn-celebrate-crest" data-magnetic="0.2" data-cursor="pointer" data-cursor-label="Scintille">
+            <img src="/emblem.webp" alt="Emblema Liber Liber" width="76" height="76" />
+          </div>
+          <h2 class="finale__title" data-split>Grazie per l'attenzione!</h2>
+          <p class="finale__sub">
+            <a href="https://www.liberliber.it" target="_blank" rel="noopener noreferrer" data-cursor="external">www.liberliber.it</a>
+          </p>
+          <div class="finale__actions">
+            <button type="button" class="finale__pill" id="btn-celebrate" data-magnetic="0.2" data-cursor="pointer">
+              <i data-lucide="sparkles"></i>
+              <span>Scintille d'oro</span>
+            </button>
+            <button type="button" class="finale__pill finale__pill--ghost" id="btn-restart" data-magnetic="0.2" data-cursor="pointer">
+              <i data-lucide="rotate-ccw"></i>
+              <span>Torna all'inizio</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
